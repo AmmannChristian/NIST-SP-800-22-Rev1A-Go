@@ -1,0 +1,175 @@
+name: NIST Scientific Validation
+
+on:
+  workflow_dispatch:  # Only run manually for NIST reference comparison
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc make unzip curl protobuf-compiler
+
+    - name: Generate Protobuf Files
+      run: |
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        make proto
+
+    - name: Cache NIST Test Suite
+      id: cache-nist
+      uses: actions/cache@v3
+      with:
+        path: sts-2.1.2
+        key: nist-sts-2.1.2-v1
+
+    - name: Download and Extract NIST Suite
+      if: steps.cache-nist.outputs.cache-hit != 'true'
+      run: |
+        echo "Downloading NIST Test Suite..."
+        curl -L -o sts.zip https://csrc.nist.rip/CSRC/media/Projects/Random-Bit-Generation/documents/sts-2_1_2.zip
+        unzip -q sts.zip
+        # Fix nested directory structure if present
+        if [ -d "sts-2.1.2/sts-2.1.2" ]; then
+          mv sts-2.1.2/sts-2.1.2/* sts-2.1.2/
+          rmdir sts-2.1.2/sts-2.1.2
+        fi
+        chmod -R 755 sts-2.1.2
+        echo "Extraction complete."
+
+    - name: Build Original NIST Suite
+      run: |
+        cd sts-2.1.2
+        echo "Building original NIST test suite..."
+        make -f makefile clean || true
+        make -f makefile
+        echo "Original NIST suite built successfully"
+        ls -lh assess
+
+    - name: Generate Reference Outputs from Original NIST
+      run: |
+        cd sts-2.1.2
+        DATASETS=("data.pi" "data.e" "data.sqrt2" "data.sqrt3" "data.sha1" "data.bad_rng")
+        
+        for dataset in "${DATASETS[@]}"; do
+          # Check in both sts-2.1.2/data and testdata
+          dataset_path=""
+          if [ -f "data/$dataset" ]; then
+            dataset_path="data/$dataset"
+          elif [ -f "../testdata/$dataset" ]; then
+            dataset_path="../testdata/$dataset"
+          else
+            echo "Warning: $dataset not found, skipping"
+            continue
+          fi
+          
+          echo "Running original NIST on $dataset..."
+
+          # Run assess in batch mode (1M bits)
+          # Input: mode=0 (file), format=1 (binary), filename, bitcount
+          printf "0\n1\n%s\n1000000\n" "$dataset_path" > /tmp/assess_input.txt
+
+          ./assess < /tmp/assess_input.txt > /tmp/assess_${dataset}.log 2>&1 || true
+          
+          # Results should be in experiments/AlgorithmTesting/results.txt
+          if [ -f "experiments/AlgorithmTesting/results.txt" ]; then
+            cp experiments/AlgorithmTesting/results.txt "/tmp/nist_results_${dataset}.txt"
+            echo "  Results saved for $dataset"
+          else
+            echo "  Warning: No results file generated for $dataset"
+          fi
+        done
+        
+        echo "Reference generation complete"
+        ls -lh /tmp/nist_results_*.txt 2>/dev/null || echo "No reference files generated"
+
+    - name: Run Pure Go vs NIST reference comparison
+      id: go-tests
+      env:
+        GOCACHE: ${{ runner.temp }}/go-cache
+      run: |
+        set -euo pipefail
+        mkdir -p "${GOCACHE}"
+        DATASETS=("data.pi" "data.e" "data.sqrt2" "data.sqrt3" "data.sha1" "data.bad_rng")
+        STATUS="passed"
+        LOG=/tmp/go_test_output.txt
+        : > "${LOG}"
+
+        for dataset in "${DATASETS[@]}"; do
+          echo "::group::Dataset ${dataset}"
+          if ! bash ./tools/run_nist_validation.sh --sts-dir "${GITHUB_WORKSPACE}/sts-2.1.2" --dataset "${dataset}" 2>&1 | tee -a "${LOG}"; then
+            STATUS="failed"
+          fi
+          echo "::endgroup::"
+          echo "" >> "${LOG}"
+        done
+
+        DATASETS_CSV=$(IFS=,; echo "${DATASETS[*]}")
+        echo "datasets=${DATASETS_CSV}" >> "${GITHUB_OUTPUT}"
+        echo "test_status=${STATUS}" >> "${GITHUB_OUTPUT}"
+
+        if [ "${STATUS}" != "passed" ]; then
+          exit 1
+        fi
+
+    - name: Generate Validation Report
+      if: always()
+      run: |
+        echo "# NIST Scientific Validation Results" > $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Status: ${{ steps.go-tests.outputs.test_status }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ "${{ steps.go-tests.outputs.test_status }}" == "passed" ]; then
+          echo "### Validation Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The Pure Go implementation produces identical P-values to the original NIST C reference implementation." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Datasets Tested:**" >> $GITHUB_STEP_SUMMARY
+          datasets="${{ steps.go-tests.outputs.datasets }}"
+          IFS=',' read -ra ds <<< "$datasets"
+          for d in "${ds[@]}"; do
+            [ -n "$d" ] && echo "- $d" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**15/15 NIST Tests Validated**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "### Validation Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "One or more tests produced P-values that differ from the NIST reference implementation." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "See test output above for details." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Details" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        if [ -f /tmp/go_test_output.txt ]; then
+          tail -50 /tmp/go_test_output.txt >> $GITHUB_STEP_SUMMARY
+        else
+          echo "No test output available" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload Test Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: validation-results
+        path: |
+          /tmp/nist_assess.log
+          /tmp/nist_results_*.txt
+        retention-days: 30
