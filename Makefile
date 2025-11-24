@@ -156,7 +156,7 @@ staticcheck:
 gosec:
 	@echo "Running gosec..."
 	mkdir -p tools/ci
-	GOCACHE=$(BUILD_DIR)/gocache gosec -exclude-dir=internal/service -exclude-generated -conf tools/ci/.gosec.json ./...
+	GOCACHE=$(BUILD_DIR)/gocache gosec -exclude-dir=internal/service -exclude-dir=.cache -exclude-generated -conf tools/ci/.gosec.json ./...
 
 govulncheck:
 	@echo "Running govulncheck..."

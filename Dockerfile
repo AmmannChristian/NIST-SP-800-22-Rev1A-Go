@@ -4,7 +4,8 @@
 FROM golang:1.25-alpine AS build
 
 WORKDIR /app
-RUN apk add --no-cache git
+RUN apk add --no-cache git make
+ENV GO111MODULE=on
 
 # Go module files first for better layer caching
 COPY go.mod go.sum ./

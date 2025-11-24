@@ -25,9 +25,6 @@ go.work
 .DS_Store
 Thumbs.db
 
-# Generated files
-*.pb.go
-api/**/*.pb.go
 
 # Build artifacts
 obj/

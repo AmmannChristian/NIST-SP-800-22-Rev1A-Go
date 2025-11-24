@@ -20,8 +20,8 @@ env:
   GO_VERSION: '1.25.x'
   GO_COVERAGE_MIN: '90'
   UNIT_PKGS: ./internal/...
-  GOCACHE: ${{ github.workspace }}/.cache/go-build
-  GOMODCACHE: ${{ github.workspace }}/.cache/go-mod
+  GOCACHE: /tmp/go-build
+  GOMODCACHE: /tmp/go-mod
   GO_CACHE_VERSION: v2
 
 jobs:
@@ -66,9 +66,6 @@ jobs:
 
       - name: Download Go modules
         run: go mod download
-
-      - name: Generate protobuf
-        run: make proto
 
       - name: Format check
         run: |
