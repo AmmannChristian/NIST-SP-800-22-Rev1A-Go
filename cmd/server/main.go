@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,6 +22,7 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"nist-sp800-22-rev1a/internal/config"
+	"nist-sp800-22-rev1a/internal/middleware"
 	"nist-sp800-22-rev1a/internal/service"
 	pb "nist-sp800-22-rev1a/pkg/pb"
 )
@@ -133,7 +135,7 @@ func startMetricsServer(ln net.Listener) *http.Server {
 
 	log.Info().
 		Str("addr", ln.Addr().String()).
-		Msg("Metrics server listening")
+		Msg("Metrics server listening (with pprof at /debug/pprof/)")
 
 	srv := &http.Server{
 		Handler:           mux,
@@ -154,9 +156,12 @@ func startMetricsServer(ln net.Listener) *http.Server {
 
 // runGRPCServer creates and configures the gRPC server
 func runGRPCServer(ln net.Listener) *grpc.Server {
-	// Create gRPC server
+	// Create gRPC server with chained interceptors
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(loggingInterceptor),
+		grpc.ChainUnaryInterceptor(
+			middleware.UnaryRequestIDInterceptor(),
+			loggingInterceptor,
+		),
 	)
 
 	// Register NIST service
@@ -174,7 +179,7 @@ func runGRPCServer(ln net.Listener) *grpc.Server {
 	return grpcServer
 }
 
-// loggingInterceptor logs all gRPC requests
+// loggingInterceptor logs all gRPC requests with request ID
 func loggingInterceptor(
 	ctx context.Context,
 	req interface{},
@@ -182,6 +187,9 @@ func loggingInterceptor(
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	start := time.Now()
+
+	// Get request ID from context
+	requestID := middleware.GetRequestID(ctx)
 
 	// Call the handler
 	resp, err := handler(ctx, req)
@@ -192,11 +200,13 @@ func loggingInterceptor(
 	if err != nil {
 		log.Error().
 			Err(err).
+			Str("request_id", requestID).
 			Str("method", info.FullMethod).
 			Dur("duration", duration).
 			Msg("gRPC request failed")
 	} else {
 		log.Debug().
+			Str("request_id", requestID).
 			Str("method", info.FullMethod).
 			Dur("duration", duration).
 			Msg("gRPC request completed")

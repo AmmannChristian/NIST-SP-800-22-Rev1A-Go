@@ -5,6 +5,8 @@
 
 A high-performance gRPC service implementing the NIST SP 800-22 statistical test suite for random number generator validation. This service provides a modern API for executing all 15 NIST tests specified in the Special Publication 800-22 revision 1a.
 
+The implementation maintains 95.4% test coverage with comprehensive benchmarking and observability features including request tracking and performance profiling.
+
 ## Validation Results
 
 The Pure Go implementation has been validated against the original NIST C reference implementation across multiple datasets:
@@ -59,6 +61,7 @@ nist-800-22-test-suite/
 ├── internal/
 │   ├── config/          # Configuration management
 │   ├── metrics/         # Prometheus metrics
+│   ├── middleware/      # Request interceptors (Request-ID, logging)
 │   ├── nist/            # Pure Go test implementations
 │   └── service/         # gRPC service handlers
 ├── pkg/pb/              # Generated protobuf code
@@ -91,14 +94,23 @@ All 15 NIST SP 800-22 tests are implemented in pure Go:
 gRPC service implementation with:
 - Request validation (bit count requirements)
 - Parallel test execution
-- Metrics collection
+- Metrics collection (Prometheus)
+- Request-ID tracking for distributed tracing
+- Structured logging with zerolog
 - Error handling
+
+**Middleware** (`internal/middleware/`)
+
+gRPC interceptors for observability:
+- Request-ID generation (UUID-based)
+- Automatic request/response logging with duration tracking
+- Metadata injection for client-side tracing
 
 **Configuration** (`internal/config/`)
 
 Environment-based configuration:
 - `GRPC_PORT` - gRPC service port (default: 9090)
-- `METRICS_PORT` - Prometheus metrics port (default: 9091)
+- `METRICS_PORT` - Prometheus metrics and pprof profiling port (default: 9091)
 - `LOG_LEVEL` - Logging verbosity (debug, info, warn, error)
 
 ### Extending the Service
@@ -132,11 +144,31 @@ results = append(results, TestResult{
 # Run all tests
 make test
 
-# Run with coverage
-make test-cover
+# Run with coverage report
+make coverage
 
 # Run with race detector
 make test-race
+```
+
+### Coverage Report
+
+The project maintains comprehensive test coverage with a 90% minimum threshold enforced in CI.
+
+Current coverage: 95.4%
+
+| Package | Coverage |
+|---------|----------|
+| internal/config | 100.0% |
+| internal/metrics | 100.0% |
+| internal/middleware | 100.0% |
+| internal/nist | 95.3% |
+| internal/service | 97.6% |
+| cmd/server | 90.6% |
+
+Generate detailed HTML coverage report:
+```bash
+make cover-html
 ```
 
 ### Scientific Validation
@@ -154,21 +186,83 @@ go test -v ./internal/nist/
 
 ## Performance
 
-Typical performance on 1,000,000 bits (125KB) with 2 CPU cores:
+### Benchmarking
 
-| Test Suite | Execution Time | Memory Usage |
-|------------|----------------|--------------|
-| All 15 tests | 1.2s - 2.5s | ~4MB |
-| Single test | 50ms - 200ms | ~1MB |
+The project includes comprehensive benchmarks for all 15 NIST tests. Run benchmarks using:
 
-Constraints:
+```bash
+# Quick benchmark run
+make bench
+
+# Run with 10 iterations for statistical significance
+make bench-all
+
+# Capture baseline for regression testing
+make bench-baseline
+
+# Compare current performance with baseline
+make bench-compare
+```
+
+For statistical comparison, install benchstat:
+```bash
+go install golang.org/x/perf/cmd/benchstat@latest
+```
+
+### Performance Metrics
+
+Typical performance on 1,000,000 bits (125KB) measured on AMD Ryzen 7 PRO 7840U:
+
+| Test | Time per Operation | Allocations |
+|------|-------------------|-------------|
+| Frequency (Monobit) | 29 µs | 0 |
+| Block Frequency | 665 µs | 0 |
+| Cumulative Sums | 8.7 ms | 1 |
+| Runs | 3.5 ms | 0 |
+| Longest Run of Ones | 4.3 ms | 2 |
+| Binary Matrix Rank | 15 ms | 31,233 |
+| Discrete Fourier Transform | 41 ms | 5 |
+| Non-Overlapping Template | 655 ms | 1 |
+| Overlapping Template | 5.4 ms | 1 |
+| Universal Statistical | 3.6 ms | 2 |
+| Approximate Entropy | 10 ms | 1 |
+| Random Excursions | 8.5 ms | 1 |
+| Random Excursions Variant | 8.9 ms | 1 |
+| Serial | 23 ms | 1 |
+| Linear Complexity | 13 ms | 1 |
+| Full Suite (all 15 tests) | 1.42 s | 42,000 |
+
+### Constraints
+
 - Minimum bits: 387,840 (required for Universal Statistical Test)
 - Maximum bits: 10,000,000 (performance limit)
 - Recommended: 1,000,000 bits for optimal reliability
 
-## Monitoring
+### Performance Profiling
 
-Prometheus metrics available at `/metrics`:
+The service includes pprof endpoints for detailed runtime analysis. Access profiling data at `http://localhost:9091/debug/pprof/`:
+
+```bash
+# CPU profiling (30 second sample)
+curl http://localhost:9091/debug/pprof/profile?seconds=30 > cpu.prof
+go tool pprof -http=:8080 cpu.prof
+
+# Memory heap profiling
+curl http://localhost:9091/debug/pprof/heap > heap.prof
+go tool pprof -http=:8080 heap.prof
+
+# Goroutine analysis
+curl http://localhost:9091/debug/pprof/goroutine > goroutine.prof
+go tool pprof -http=:8080 goroutine.prof
+```
+
+Available pprof profiles: heap, goroutine, threadcreate, block, mutex, profile (CPU), trace
+
+## Monitoring and Observability
+
+### Prometheus Metrics
+
+Metrics are exposed at `http://localhost:9091/metrics`:
 
 - `nist_tests_total` - Total number of test executions
 - `nist_test_duration_seconds` - Test execution duration histogram
@@ -176,6 +270,29 @@ Prometheus metrics available at `/metrics`:
 - `nist_requests_total` - Total gRPC requests
 
 Access Grafana at `http://localhost:3000` (default credentials: admin/admin) after starting with docker-compose.
+
+### Request Tracking
+
+Every gRPC request is assigned a unique Request-ID (UUID) for distributed tracing:
+
+- Logged in all server logs under the `request_id` field
+- Returned to clients via gRPC metadata header `x-request-id`
+- Enables end-to-end request correlation across distributed systems
+
+Example log entry:
+```json
+{
+  "level": "debug",
+  "request_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+  "method": "/nist.v1.NISTTestService/RunTests",
+  "duration": 1423,
+  "message": "gRPC request completed"
+}
+```
+
+### Structured Logging
+
+The service uses zerolog for high-performance structured logging with zero allocations. Log output includes request IDs, method names, durations, and error details for comprehensive observability.
 
 ## Attribution and License
 
@@ -211,6 +328,18 @@ make clean         # Remove build artifacts
 make fmt           # Format code
 make lint          # Run linters
 make tools         # Install development tools
+
+# Testing
+make test          # Run unit tests
+make test-race     # Run tests with race detector
+make coverage      # Generate coverage report with 90% threshold check
+make cover-html    # Generate HTML coverage report
+
+# Benchmarking
+make bench         # Run performance benchmarks
+make bench-all     # Run benchmarks with 10 iterations
+make bench-baseline # Capture baseline for comparison
+make bench-compare # Compare current benchmarks with baseline
 ```
 
 ### CI/CD

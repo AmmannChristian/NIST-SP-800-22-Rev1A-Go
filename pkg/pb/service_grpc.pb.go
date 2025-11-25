@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.21.12
-// source: api/nist/v1/service.proto
+// source: service.proto
 
 package nistv1
 
@@ -163,5 +163,5 @@ var NISTTestService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/nist/v1/service.proto",
+	Metadata: "service.proto",
 }

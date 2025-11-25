@@ -1,6 +1,6 @@
 # Makefile for nist-sp800-22-rev1a
 
-.PHONY: all proto build build-arm64 run clean test test-ci tests test-cover test-race cover cover-html cover-threshold perpkg-threshold coverage-ci coverage deploy deps dev fmt fmt-fix lint staticcheck gosec govulncheck vet tools tools-update help docker-build
+.PHONY: all proto build build-arm64 run clean test test-ci tests test-cover test-race cover cover-html cover-threshold perpkg-threshold coverage-ci coverage deploy deps dev fmt fmt-fix lint staticcheck gosec govulncheck vet tools tools-update help docker-build bench bench-all bench-compare bench-baseline
 
 # ========================================
 # Variables
@@ -173,6 +173,39 @@ coverage:
 	@$(MAKE) cover-threshold
 
 # ========================================
+# Benchmarking
+# ========================================
+bench:
+	@echo "Running benchmarks..."
+	go test -bench=. -benchmem -benchtime=10s ./internal/nist/
+
+bench-all:
+	@echo "Running all benchmarks with 10 iterations..."
+	go test -bench=. -benchmem -benchtime=10s -count=10 ./internal/nist/ | tee $(BUILD_DIR)/bench-current.txt
+
+bench-compare:
+	@echo "Comparing benchmarks with baseline..."
+	@test -f $(BUILD_DIR)/bench-baseline.txt || { echo "No baseline found. Run 'make bench-baseline' first."; exit 1; }
+	@echo "Running current benchmarks..."
+	@go test -bench=. -benchmem -count=5 ./internal/nist/ | tee $(BUILD_DIR)/bench-current.txt
+	@if command -v benchstat >/dev/null 2>&1; then \
+		echo ""; \
+		echo "Benchmark comparison:"; \
+		benchstat $(BUILD_DIR)/bench-baseline.txt $(BUILD_DIR)/bench-current.txt; \
+	else \
+		echo ""; \
+		echo "Install benchstat for statistical comparison:"; \
+		echo "  go install golang.org/x/perf/cmd/benchstat@latest"; \
+	fi
+
+bench-baseline:
+	@echo "Capturing baseline benchmarks..."
+	@mkdir -p $(BUILD_DIR)
+	go test -bench=. -benchmem -count=10 ./internal/nist/ | tee $(BUILD_DIR)/bench-baseline.txt
+	@echo ""
+	@echo "Baseline saved to $(BUILD_DIR)/bench-baseline.txt"
+
+# ========================================
 # Install dependencies
 # ========================================
 deps:
@@ -263,3 +296,7 @@ help:
 	@echo "  make lint            - Run linters"
 	@echo "  make vet             - Run go vet"
 	@echo "  make tools           - Install pinned developer tools"
+	@echo "  make bench           - Run benchmarks"
+	@echo "  make bench-all       - Run benchmarks with 10 iterations"
+	@echo "  make bench-baseline  - Capture baseline benchmarks"
+	@echo "  make bench-compare   - Compare with baseline (requires benchstat)"

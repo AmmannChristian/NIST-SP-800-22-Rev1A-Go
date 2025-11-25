@@ -47,3 +47,34 @@ func TestValidateFailures(t *testing.T) {
 		t.Fatalf("expected default on parse error, got %d", v)
 	}
 }
+
+func TestLoadDefaults(t *testing.T) {
+	// Clear any environment variables
+	for _, key := range []string{"GRPC_PORT", "METRICS_PORT", "LOG_LEVEL"} {
+		t.Setenv(key, "")
+	}
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() returned error: %v", err)
+	}
+
+	// Check default values
+	if cfg.GRPCPort != 9090 {
+		t.Errorf("expected default GRPCPort=9090, got %d", cfg.GRPCPort)
+	}
+	if cfg.MetricsPort != 9091 {
+		t.Errorf("expected default MetricsPort=9091, got %d", cfg.MetricsPort)
+	}
+	if cfg.LogLevel != "info" {
+		t.Errorf("expected default LogLevel=info, got %s", cfg.LogLevel)
+	}
+}
+
+func TestLoadInvalidConfig(t *testing.T) {
+	t.Setenv("GRPC_PORT", "0")
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected error for invalid port")
+	}
+}

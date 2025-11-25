@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v3.21.12
-// source: api/nist/v1/service.proto
+// source: service.proto
 
 package nistv1
 
@@ -34,7 +34,7 @@ type TestRequest struct {
 
 func (x *TestRequest) Reset() {
 	*x = TestRequest{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[0]
+	mi := &file_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +46,7 @@ func (x *TestRequest) String() string {
 func (*TestRequest) ProtoMessage() {}
 
 func (x *TestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[0]
+	mi := &file_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +59,7 @@ func (x *TestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestRequest.ProtoReflect.Descriptor instead.
 func (*TestRequest) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{0}
+	return file_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *TestRequest) GetBitstream() []byte {
@@ -97,7 +97,7 @@ type TestConfig struct {
 
 func (x *TestConfig) Reset() {
 	*x = TestConfig{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[1]
+	mi := &file_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -109,7 +109,7 @@ func (x *TestConfig) String() string {
 func (*TestConfig) ProtoMessage() {}
 
 func (x *TestConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[1]
+	mi := &file_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -122,7 +122,7 @@ func (x *TestConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestConfig.ProtoReflect.Descriptor instead.
 func (*TestConfig) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{1}
+	return file_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *TestConfig) GetBlockFrequencyBlockLength() int32 {
@@ -195,7 +195,7 @@ type TestResponse struct {
 
 func (x *TestResponse) Reset() {
 	*x = TestResponse{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[2]
+	mi := &file_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -207,7 +207,7 @@ func (x *TestResponse) String() string {
 func (*TestResponse) ProtoMessage() {}
 
 func (x *TestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[2]
+	mi := &file_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -220,7 +220,7 @@ func (x *TestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestResponse.ProtoReflect.Descriptor instead.
 func (*TestResponse) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{2}
+	return file_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TestResponse) GetTimestamp() string {
@@ -312,7 +312,7 @@ type TestResult struct {
 
 func (x *TestResult) Reset() {
 	*x = TestResult{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[3]
+	mi := &file_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -324,7 +324,7 @@ func (x *TestResult) String() string {
 func (*TestResult) ProtoMessage() {}
 
 func (x *TestResult) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[3]
+	mi := &file_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,7 +337,7 @@ func (x *TestResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TestResult.ProtoReflect.Descriptor instead.
 func (*TestResult) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{3}
+	return file_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TestResult) GetName() string {
@@ -384,7 +384,7 @@ type HealthRequest struct {
 
 func (x *HealthRequest) Reset() {
 	*x = HealthRequest{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[4]
+	mi := &file_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -396,7 +396,7 @@ func (x *HealthRequest) String() string {
 func (*HealthRequest) ProtoMessage() {}
 
 func (x *HealthRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[4]
+	mi := &file_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -409,7 +409,7 @@ func (x *HealthRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthRequest.ProtoReflect.Descriptor instead.
 func (*HealthRequest) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{4}
+	return file_service_proto_rawDescGZIP(), []int{4}
 }
 
 // HealthResponse indicates service status
@@ -427,7 +427,7 @@ type HealthResponse struct {
 
 func (x *HealthResponse) Reset() {
 	*x = HealthResponse{}
-	mi := &file_api_nist_v1_service_proto_msgTypes[5]
+	mi := &file_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -439,7 +439,7 @@ func (x *HealthResponse) String() string {
 func (*HealthResponse) ProtoMessage() {}
 
 func (x *HealthResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_nist_v1_service_proto_msgTypes[5]
+	mi := &file_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -452,7 +452,7 @@ func (x *HealthResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthResponse.ProtoReflect.Descriptor instead.
 func (*HealthResponse) Descriptor() ([]byte, []int) {
-	return file_api_nist_v1_service_proto_rawDescGZIP(), []int{5}
+	return file_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *HealthResponse) GetHealthy() bool {
@@ -476,11 +476,11 @@ func (x *HealthResponse) GetMessage() string {
 	return ""
 }
 
-var File_api_nist_v1_service_proto protoreflect.FileDescriptor
+var File_service_proto protoreflect.FileDescriptor
 
-const file_api_nist_v1_service_proto_rawDesc = "" +
+const file_service_proto_rawDesc = "" +
 	"\n" +
-	"\x19api/nist/v1/service.proto\x12\anist.v1\"h\n" +
+	"\rservice.proto\x12\anist.v1\"h\n" +
 	"\vTestRequest\x12\x1c\n" +
 	"\tbitstream\x18\x01 \x01(\fR\tbitstream\x120\n" +
 	"\x06config\x18\x02 \x01(\v2\x13.nist.v1.TestConfigH\x00R\x06config\x88\x01\x01B\t\n" +
@@ -530,19 +530,19 @@ const file_api_nist_v1_service_proto_rawDesc = "" +
 	"\vHealthCheck\x12\x16.nist.v1.HealthRequest\x1a\x17.nist.v1.HealthResponseB#Z!nist-sp800-22-rev1a/pkg/pb;nistv1b\x06proto3"
 
 var (
-	file_api_nist_v1_service_proto_rawDescOnce sync.Once
-	file_api_nist_v1_service_proto_rawDescData []byte
+	file_service_proto_rawDescOnce sync.Once
+	file_service_proto_rawDescData []byte
 )
 
-func file_api_nist_v1_service_proto_rawDescGZIP() []byte {
-	file_api_nist_v1_service_proto_rawDescOnce.Do(func() {
-		file_api_nist_v1_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_nist_v1_service_proto_rawDesc), len(file_api_nist_v1_service_proto_rawDesc)))
+func file_service_proto_rawDescGZIP() []byte {
+	file_service_proto_rawDescOnce.Do(func() {
+		file_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_service_proto_rawDesc), len(file_service_proto_rawDesc)))
 	})
-	return file_api_nist_v1_service_proto_rawDescData
+	return file_service_proto_rawDescData
 }
 
-var file_api_nist_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_api_nist_v1_service_proto_goTypes = []any{
+var file_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_service_proto_goTypes = []any{
 	(*TestRequest)(nil),    // 0: nist.v1.TestRequest
 	(*TestConfig)(nil),     // 1: nist.v1.TestConfig
 	(*TestResponse)(nil),   // 2: nist.v1.TestResponse
@@ -550,7 +550,7 @@ var file_api_nist_v1_service_proto_goTypes = []any{
 	(*HealthRequest)(nil),  // 4: nist.v1.HealthRequest
 	(*HealthResponse)(nil), // 5: nist.v1.HealthResponse
 }
-var file_api_nist_v1_service_proto_depIdxs = []int32{
+var file_service_proto_depIdxs = []int32{
 	1, // 0: nist.v1.TestRequest.config:type_name -> nist.v1.TestConfig
 	3, // 1: nist.v1.TestResponse.tests:type_name -> nist.v1.TestResult
 	0, // 2: nist.v1.NISTTestService.RunTests:input_type -> nist.v1.TestRequest
@@ -564,29 +564,29 @@ var file_api_nist_v1_service_proto_depIdxs = []int32{
 	0, // [0:2] is the sub-list for field type_name
 }
 
-func init() { file_api_nist_v1_service_proto_init() }
-func file_api_nist_v1_service_proto_init() {
-	if File_api_nist_v1_service_proto != nil {
+func init() { file_service_proto_init() }
+func file_service_proto_init() {
+	if File_service_proto != nil {
 		return
 	}
-	file_api_nist_v1_service_proto_msgTypes[0].OneofWrappers = []any{}
-	file_api_nist_v1_service_proto_msgTypes[3].OneofWrappers = []any{}
-	file_api_nist_v1_service_proto_msgTypes[5].OneofWrappers = []any{}
+	file_service_proto_msgTypes[0].OneofWrappers = []any{}
+	file_service_proto_msgTypes[3].OneofWrappers = []any{}
+	file_service_proto_msgTypes[5].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_nist_v1_service_proto_rawDesc), len(file_api_nist_v1_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_service_proto_rawDesc), len(file_service_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_nist_v1_service_proto_goTypes,
-		DependencyIndexes: file_api_nist_v1_service_proto_depIdxs,
-		MessageInfos:      file_api_nist_v1_service_proto_msgTypes,
+		GoTypes:           file_service_proto_goTypes,
+		DependencyIndexes: file_service_proto_depIdxs,
+		MessageInfos:      file_service_proto_msgTypes,
 	}.Build()
-	File_api_nist_v1_service_proto = out.File
-	file_api_nist_v1_service_proto_goTypes = nil
-	file_api_nist_v1_service_proto_depIdxs = nil
+	File_service_proto = out.File
+	file_service_proto_goTypes = nil
+	file_service_proto_depIdxs = nil
 }
