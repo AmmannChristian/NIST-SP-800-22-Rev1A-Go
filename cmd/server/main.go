@@ -21,10 +21,10 @@ import (
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
-	"nist-sp800-22-rev1a/internal/config"
-	"nist-sp800-22-rev1a/internal/middleware"
-	"nist-sp800-22-rev1a/internal/service"
-	pb "nist-sp800-22-rev1a/pkg/pb"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/config"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/middleware"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/service"
+	pb "github.com/AmmannChristian/nist-sp800-22-rev1a/pkg/pb"
 )
 
 func main() {

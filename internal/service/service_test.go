@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"nist-sp800-22-rev1a/internal/nist"
-	pb "nist-sp800-22-rev1a/pkg/pb"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/nist"
+	pb "github.com/AmmannChristian/nist-sp800-22-rev1a/pkg/pb"
 )
 
 func TestValidateRequest(t *testing.T) {

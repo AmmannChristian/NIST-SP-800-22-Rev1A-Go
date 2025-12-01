@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package nist.v1;
 
-option go_package = "nist-sp800-22-rev1a/pkg/pb;nistv1";
+option go_package = "github.com/AmmannChristian/nist-sp800-22-rev1a/pkg/pb;nistv1";
 
 // NIST SP 800-22 Statistical Test Suite Service
 service NISTTestService {

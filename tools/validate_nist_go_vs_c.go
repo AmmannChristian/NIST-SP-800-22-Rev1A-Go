@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"nist-sp800-22-rev1a/internal/nist"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/nist"
 )
 
 type testResult struct {

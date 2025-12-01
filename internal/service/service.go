@@ -9,10 +9,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	pb "nist-sp800-22-rev1a/pkg/pb"
+	pb "github.com/AmmannChristian/nist-sp800-22-rev1a/pkg/pb"
 
-	"nist-sp800-22-rev1a/internal/metrics"
-	"nist-sp800-22-rev1a/internal/nist"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/metrics"
+	"github.com/AmmannChristian/nist-sp800-22-rev1a/internal/nist"
 
 	"gonum.org/v1/gonum/mathext"
 )

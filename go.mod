@@ -1,4 +1,4 @@
-module nist-sp800-22-rev1a
+module github.com/AmmannChristian/nist-sp800-22-rev1a
 
 go 1.25
 

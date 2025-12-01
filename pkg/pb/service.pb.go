@@ -527,7 +527,7 @@ const file_service_proto_rawDesc = "" +
 	"\b_message2\x8a\x01\n" +
 	"\x0fNISTTestService\x127\n" +
 	"\bRunTests\x12\x14.nist.v1.TestRequest\x1a\x15.nist.v1.TestResponse\x12>\n" +
-	"\vHealthCheck\x12\x16.nist.v1.HealthRequest\x1a\x17.nist.v1.HealthResponseB#Z!nist-sp800-22-rev1a/pkg/pb;nistv1b\x06proto3"
+	"\vHealthCheck\x12\x16.nist.v1.HealthRequest\x1a\x17.nist.v1.HealthResponseB>Z<github.com/AmmannChristian/nist-sp800-22-rev1a/pkg/pb;nistv1b\x06proto3"
 
 var (
 	file_service_proto_rawDescOnce sync.Once
