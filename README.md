@@ -2,6 +2,7 @@
 
 ![CI](https://github.com/AmmannChristian/nist-sp800-22-rev1a/actions/workflows/ci.yml/badge.svg)
 ![NIST Validation](https://github.com/AmmannChristian/nist-sp800-22-rev1a/actions/workflows/nist-validation.yml/badge.svg)
+[![codecov](https://codecov.io/gh/AmmannChristian/nist-sp800-22-rev1a/branch/main/graph/badge.svg)](https://app.codecov.io/gh/AmmannChristian/nist-sp800-22-rev1a)
 
 A high-performance gRPC service implementing the NIST SP 800-22 statistical test suite for random number generator validation. This service provides a modern API for executing all 15 NIST tests specified in the Special Publication 800-22 revision 1a.
 

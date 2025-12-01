@@ -110,6 +110,12 @@ jobs:
           set -e
           exit $status
 
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/coverage.out
+
       - name: Build native binary
         run: |
           mkdir -p build-ci/binaries
