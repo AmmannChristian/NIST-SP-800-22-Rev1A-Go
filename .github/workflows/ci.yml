@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  GO_VERSION: '1.25.x'
+  GO_VERSION: '1.25.4'
   GO_COVERAGE_MIN: '90'
   UNIT_PKGS: ./internal/...
   GOCACHE: /tmp/go-build
