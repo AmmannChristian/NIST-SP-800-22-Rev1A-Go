@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
@@ -70,8 +71,10 @@ func run(ctx context.Context) error {
 		return fmt.Errorf("failed to configure gRPC server: %w", err)
 	}
 
-	// Create and run gRPC server
-	grpcServer := runGRPCServer(grpcLn, unaryInterceptors)
+	grpcServer, err := runGRPCServer(cfg, unaryInterceptors)
+	if err != nil {
+		return fmt.Errorf("failed to create gRPC server: %w", err)
+	}
 
 	// Handle graceful shutdown
 	// We merge the provided context with signal handling
@@ -162,10 +165,13 @@ func startMetricsServer(ln net.Listener) *http.Server {
 }
 
 // runGRPCServer creates and configures the gRPC server
-func runGRPCServer(ln net.Listener, unaryInterceptors []grpc.UnaryServerInterceptor) *grpc.Server {
-	grpcServer := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(unaryInterceptors...),
-	)
+func runGRPCServer(cfg *config.Config, unaryInterceptors []grpc.UnaryServerInterceptor) (*grpc.Server, error) {
+	serverOpts, err := buildGRPCServerOptions(cfg, unaryInterceptors)
+	if err != nil {
+		return nil, err
+	}
+
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	// Register NIST service
 	nistServer := service.NewServer()
@@ -179,7 +185,7 @@ func runGRPCServer(ln net.Listener, unaryInterceptors []grpc.UnaryServerIntercep
 	// Register reflection for grpcurl
 	reflection.Register(grpcServer)
 
-	return grpcServer
+	return grpcServer, nil
 }
 
 func buildUnaryInterceptors(cfg *config.Config) ([]grpc.UnaryServerInterceptor, error) {
@@ -218,6 +224,61 @@ func buildUnaryInterceptors(cfg *config.Config) ([]grpc.UnaryServerInterceptor, 
 	)
 
 	return append(interceptors, authInterceptor), nil
+}
+
+func buildGRPCServerOptions(cfg *config.Config, unaryInterceptors []grpc.UnaryServerInterceptor) ([]grpc.ServerOption, error) {
+	opts := []grpc.ServerOption{
+		grpc.ChainUnaryInterceptor(unaryInterceptors...),
+	}
+
+	if !cfg.TLSEnabled {
+		return opts, nil
+	}
+
+	clientAuth, err := cfg.TLSClientAuthType()
+	if err != nil {
+		return nil, fmt.Errorf("invalid TLS client auth setting: %w", err)
+	}
+
+	minVersion, err := cfg.TLSMinVersionValue()
+	if err != nil {
+		return nil, fmt.Errorf("invalid TLS min version: %w", err)
+	}
+
+	tlsConfig := &grpcserver.TLSConfig{
+		CertFile:   cfg.TLSCertFile,
+		KeyFile:    cfg.TLSKeyFile,
+		CAFile:     cfg.TLSCAFile,
+		ClientAuth: clientAuth,
+		MinVersion: minVersion,
+	}
+
+	tlsOpt, err := grpcserver.ServerOption(tlsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to configure TLS: %w", err)
+	}
+
+	log.Info().
+		Bool("tls_enabled", true).
+		Str("cert_file", cfg.TLSCertFile).
+		Str("key_file", cfg.TLSKeyFile).
+		Str("ca_file", cfg.TLSCAFile).
+		Str("client_auth", cfg.TLSClientAuth).
+		Str("min_version", tlsVersionString(minVersion)).
+		Msg("gRPC TLS enabled")
+
+	return append(opts, tlsOpt), nil
+}
+
+func tlsVersionString(version uint16) string {
+	switch version {
+	case tls.VersionTLS13:
+		return "1.3"
+	case tls.VersionTLS12:
+		return "1.2"
+	default:
+		return fmt.Sprintf("0x%x", version)
+	}
 }
 
 // loggingInterceptor logs all gRPC requests with request ID

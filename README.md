@@ -120,6 +120,11 @@ Environment-based configuration:
 - `AUTH_ISSUER` - Expected token issuer (required when auth is enabled)
 - `AUTH_AUDIENCE` - Expected token audience (required when auth is enabled)
 - `AUTH_JWKS_URL` - Optional custom JWKS endpoint (defaults to issuer well-known URL)
+- `TLS_ENABLED` - Enable TLS for the gRPC server (default: false)
+- `TLS_CERT_FILE` / `TLS_KEY_FILE` - Server certificate and key (required when TLS is enabled)
+- `TLS_CA_FILE` - Optional CA bundle for client cert verification (mTLS)
+- `TLS_CLIENT_AUTH` - Client auth mode (`none`, `request`, `requireany`, `verifyifgiven`, `requireandverify`; default: `none`)
+- `TLS_MIN_VERSION` - Minimum TLS version (`1.2` or `1.3`; default: `1.2`)
 
 ### Extending the Service
 

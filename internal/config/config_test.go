@@ -12,6 +12,12 @@ func TestLoadWithEnvOverrides(t *testing.T) {
 	t.Setenv("AUTH_ISSUER", "https://issuer.example.com")
 	t.Setenv("AUTH_AUDIENCE", "nist-api")
 	t.Setenv("AUTH_JWKS_URL", "https://issuer.example.com/jwks.json")
+	t.Setenv("TLS_ENABLED", "true")
+	t.Setenv("TLS_CERT_FILE", "/tmp/cert.pem")
+	t.Setenv("TLS_KEY_FILE", "/tmp/key.pem")
+	t.Setenv("TLS_CA_FILE", "/tmp/ca.pem")
+	t.Setenv("TLS_CLIENT_AUTH", "requireandverify")
+	t.Setenv("TLS_MIN_VERSION", "1.3")
 
 	cfg, err := Load()
 	if err != nil {
@@ -36,6 +42,18 @@ func TestLoadWithEnvOverrides(t *testing.T) {
 	if cfg.AuthJWKSURL != "https://issuer.example.com/jwks.json" {
 		t.Fatalf("unexpected JWKS URL: %s", cfg.AuthJWKSURL)
 	}
+	if !cfg.TLSEnabled {
+		t.Fatalf("expected TLSEnabled to be true")
+	}
+	if cfg.TLSCertFile != "/tmp/cert.pem" || cfg.TLSKeyFile != "/tmp/key.pem" || cfg.TLSCAFile != "/tmp/ca.pem" {
+		t.Fatalf("unexpected TLS file config: %+v", cfg)
+	}
+	if cfg.TLSClientAuth != "requireandverify" {
+		t.Fatalf("unexpected TLS client auth: %s", cfg.TLSClientAuth)
+	}
+	if cfg.TLSMinVersion != "1.3" {
+		t.Fatalf("unexpected TLS min version: %s", cfg.TLSMinVersion)
+	}
 }
 
 func TestValidateFailures(t *testing.T) {
@@ -48,6 +66,10 @@ func TestValidateFailures(t *testing.T) {
 		{"bad log level", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "verbose"}},
 		{"auth enabled missing issuer", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", AuthEnabled: true, AuthAudience: "api"}},
 		{"auth enabled missing audience", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", AuthEnabled: true, AuthIssuer: "https://issuer.example.com"}},
+		{"tls enabled missing cert", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", TLSEnabled: true, TLSKeyFile: "/tmp/key.pem"}},
+		{"tls enabled missing key", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", TLSEnabled: true, TLSCertFile: "/tmp/cert.pem"}},
+		{"tls enabled invalid client auth", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", TLSEnabled: true, TLSCertFile: "/tmp/cert.pem", TLSKeyFile: "/tmp/key.pem", TLSClientAuth: "invalid"}},
+		{"tls enabled invalid min version", Config{GRPCPort: 9000, MetricsPort: 9001, LogLevel: "info", TLSEnabled: true, TLSCertFile: "/tmp/cert.pem", TLSKeyFile: "/tmp/key.pem", TLSMinVersion: "1.1"}},
 	}
 
 	for _, tt := range tests {
@@ -68,7 +90,7 @@ func TestValidateFailures(t *testing.T) {
 
 func TestLoadDefaults(t *testing.T) {
 	// Clear any environment variables
-	for _, key := range []string{"GRPC_PORT", "METRICS_PORT", "LOG_LEVEL", "AUTH_ENABLED", "AUTH_ISSUER", "AUTH_AUDIENCE", "AUTH_JWKS_URL"} {
+	for _, key := range []string{"GRPC_PORT", "METRICS_PORT", "LOG_LEVEL", "AUTH_ENABLED", "AUTH_ISSUER", "AUTH_AUDIENCE", "AUTH_JWKS_URL", "TLS_ENABLED", "TLS_CERT_FILE", "TLS_KEY_FILE", "TLS_CA_FILE", "TLS_CLIENT_AUTH", "TLS_MIN_VERSION"} {
 		t.Setenv(key, "")
 	}
 
@@ -92,6 +114,18 @@ func TestLoadDefaults(t *testing.T) {
 	}
 	if cfg.AuthIssuer != "" || cfg.AuthAudience != "" || cfg.AuthJWKSURL != "" {
 		t.Errorf("expected auth config defaults to be empty, got %+v", cfg)
+	}
+	if cfg.TLSEnabled {
+		t.Errorf("expected TLSEnabled to be false by default")
+	}
+	if cfg.TLSCertFile != "" || cfg.TLSKeyFile != "" || cfg.TLSCAFile != "" {
+		t.Errorf("expected TLS file settings to be empty by default, got %+v", cfg)
+	}
+	if cfg.TLSClientAuth != "none" {
+		t.Errorf("expected TLSClientAuth to default to 'none', got %s", cfg.TLSClientAuth)
+	}
+	if cfg.TLSMinVersion != "1.2" {
+		t.Errorf("expected TLSMinVersion to default to '1.2', got %s", cfg.TLSMinVersion)
 	}
 }
 

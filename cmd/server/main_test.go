@@ -102,7 +102,10 @@ func TestRunGRPCServer(t *testing.T) {
 		t.Fatalf("failed to build interceptors: %v", err)
 	}
 
-	srv := runGRPCServer(ln, interceptors)
+	srv, err := runGRPCServer(&config.Config{}, interceptors)
+	if err != nil {
+		t.Fatalf("failed to create gRPC server: %v", err)
+	}
 	defer srv.Stop()
 
 	go func() {

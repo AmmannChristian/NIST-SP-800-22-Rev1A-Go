@@ -13,6 +13,12 @@ services:
       - AUTH_ISSUER=${AUTH_ISSUER:-}
       - AUTH_AUDIENCE=${AUTH_AUDIENCE:-}
       - AUTH_JWKS_URL=${AUTH_JWKS_URL:-}
+      - TLS_ENABLED=${TLS_ENABLED:-false}
+      - TLS_CERT_FILE=${TLS_CERT_FILE:-}
+      - TLS_KEY_FILE=${TLS_KEY_FILE:-}
+      - TLS_CA_FILE=${TLS_CA_FILE:-}
+      - TLS_CLIENT_AUTH=${TLS_CLIENT_AUTH:-none}
+      - TLS_MIN_VERSION=${TLS_MIN_VERSION:-1.2}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:$METRICS_PORT/health"]
       interval: 30s
