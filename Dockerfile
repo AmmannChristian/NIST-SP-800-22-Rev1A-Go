@@ -43,8 +43,4 @@ EXPOSE 9090 9091
 
 USER nist
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:9091/health || exit 1
-
 ENTRYPOINT ["/usr/local/bin/nist-sp800-22-rev1a"]
